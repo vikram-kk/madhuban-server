@@ -96,3 +96,19 @@ export const login = async (req, res) => {
 const logout = async (req, res) => {
 
 }
+
+
+//me controller 
+export const findme = async (req, res) => {
+    try {
+        return res.status(200).json({
+            message: "User found",
+            user: req.user
+        });
+    } catch (error) {
+        return res.status(500).json({
+            message: "Error fetching user",
+            error: error.message
+        });
+    }
+};
