@@ -1,16 +1,24 @@
 // imports
 import bcrypt from 'bcrypt'
-
+import jwt from 'jsonwebtoken'
 
 import User from "../models/User.model";
 
 //register controller 
-const register = async (req, res) => {
+export const register = async (req, res) => {
     try {
         const { name, email, password, phone } = req.body;
         // check for all fields
-        if (!name || !email || !passowrd || !phone) {
+        if (!name || !email || !password || !phone) {
             return res.status(400).json({ message: "enter all fields" })
+        }
+
+        if (!email.includes("@")) {
+            return res.status(400).json({ message: "Invalid email" });
+        }
+
+        if (password.length < 6) {
+            return res.status(400).json({ message: "Password too short" });
         }
         //existing user check 
         const existingUser = await User.findOne({ email })
@@ -28,14 +36,15 @@ const register = async (req, res) => {
         })
         // checking if user got created or not
         if (!user) {
-            return res.status(402).json({ message: "failed registring the user" })
+            return res.status(500).json({ message: "failed registring the user" })
         }
 
         const userObj = user.toObject()
         const { password: _pw, ...resUser } = userObj;
-        return res.status(200).json({ message: "user created successfully", resUser })
+        const token = jwt.sign({ id: user._id }, process.env.JWT_TOKEN, { expiresIn: '24h' })
+        return res.status(201).json({ message: "user created successfully", resUser, token })
     } catch (error) {
-        res.json({ message: "Internal server error in register API" })
+        res.status(500).json({ message: "Internal server error in register API" })
     }
 
 
@@ -43,12 +52,20 @@ const register = async (req, res) => {
 
 
 //login controller 
-const login = async (req, res) => {
+export const login = async (req, res) => {
     try {
         const { email, password } = req.body
         //checking email and password
         if (!email || !password) {
             return res.status(401).json({ message: "please provide required information" })
+        }
+
+        if (!email.includes("@")) {
+            return res.status(400).json({ message: "Invalid email" });
+        }
+
+        if (password.length < 6) {
+            return res.status(400).json({ message: "Password too short" });
         }
         // finding the user
         const existingUser = await User.findOne({ email })
@@ -63,8 +80,19 @@ const login = async (req, res) => {
         if (!isMatch) {
             return res.status(401).json({ message: "enter valid email and password" })
         }
-        return res.status(200).json({ message: "User found and logged In" })
+        const token = jwt.sign({ id: existingUser._id }, process.env.JWT_TOKEN, { expiresIn: '24h' })
+
+        return res.status(200).json({
+            message: "User found and logged In",
+            token,
+            user: resUser
+        })
     } catch (error) {
         res.status(500).json({ message: `internal server error : ${error.message}` })
     }
+}
+
+//logout controller 
+const logout = async (req, res) => {
+
 }
