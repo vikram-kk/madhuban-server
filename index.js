@@ -8,18 +8,24 @@ import cors from 'cors'
 //js imports
 import serverService from './services/server.js'
 import socketServer from './services/socket.service.js'
-
+import authRoute from './routes/auth.route.js'
+import connectDb from './configurations/mongoDB.config.js'
 
 //express app
 const app = express()
 
 // middlewares
 env.config()
-app.use(cors)
+app.use(express.json())
+app.use(cors())
 
 
 //server
+connectDb()
 const server = createServer(app)
+
+//Routes
+app.use("/api/auth", authRoute)
 
 
 //server start 
@@ -34,6 +40,3 @@ io.on('connection', (socket) => {
 
 
 
-app.use("/", (req, res) => {
-    res.json("hello Vikram Thakur")
-})

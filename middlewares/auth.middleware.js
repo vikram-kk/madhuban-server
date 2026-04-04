@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken"
-import User from "../models/User.model"
+import User from "../models/User.model.js"
 
 // auth middleware 
 export const authMid = async (req, res, next) => {
@@ -10,7 +10,7 @@ export const authMid = async (req, res, next) => {
             return res.status(401).json({ message: "user not authenticated" })
         }
         //decode the token
-        const decoded = await jwt.verify(token, process.env.JSW_TOKEN)
+        const decoded = await jwt.verify(token, process.env.JWT_TOKEN)
         // check whether the decoded user is i db or not 
         const user = await User.findById(decoded.id).select("-password");
         // check if user found or not 
