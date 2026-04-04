@@ -10,6 +10,7 @@ import serverService from './services/server.js'
 import socketServer from './services/socket.service.js'
 import authRoute from './routes/auth.route.js'
 import connectDb from './configurations/mongoDB.config.js'
+import productRoute from './routes/product.route.js'
 
 //express app
 const app = express()
@@ -25,7 +26,11 @@ connectDb()
 const server = createServer(app)
 
 //Routes
+
+//auth
 app.use("/api/auth", authRoute)
+//product
+app.use('/api/product',)
 
 
 //server start 
