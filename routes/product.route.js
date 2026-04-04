@@ -6,11 +6,11 @@ import { roleMid } from '../middlewares/role.middleware.js'
 const router = express.Router()
 
 
+router.get("/", getProducts)
+router.get("/:productId", getProductById)
 router.post("/createProduct", authMid, roleMid('admin'), createProduct)
-router.get("/products", getProducts)
-router.get("/products/:id", getProductById)
-router.get("/products/update/:id", authMid, roleMid('admin'), updateProduct)
-router.delete("/products/delete/:id", authMid, roleMid('admin'), getProductById)
+router.patch("/update/:id", authMid, roleMid('admin'), updateProduct)
+router.delete("/delete/:id", authMid, roleMid('admin'), getProductById)
 
 
 export default router

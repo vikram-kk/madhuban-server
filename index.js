@@ -30,7 +30,7 @@ const server = createServer(app)
 //auth
 app.use("/api/auth", authRoute)
 //product
-app.use('/api/product',)
+app.use('/api/product', productRoute)
 
 
 //server start 

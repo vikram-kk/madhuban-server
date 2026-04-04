@@ -7,7 +7,7 @@ import Product from '../models/Product.model.js'
 export const getProducts = async (req, res) => {
     try {
 
-        const { keyword, maxPrice, minPrice } = req.body
+        const { keyword, maxPrice, minPrice } = req.query
         let query = {}
         // adding keyword in query 
         if (keyword) {

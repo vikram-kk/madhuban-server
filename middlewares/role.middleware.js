@@ -1,5 +1,5 @@
 //role middleware 
-const roleMid = (...roles) => {
+export const roleMid = (...roles) => {
     return (req, res, next) => {
         try {
             if (!req.user) {
