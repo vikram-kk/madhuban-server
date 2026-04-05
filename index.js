@@ -11,6 +11,7 @@ import socketServer from './services/socket.service.js'
 import authRoute from './routes/auth.route.js'
 import connectDb from './configurations/mongoDB.config.js'
 import productRoute from './routes/product.route.js'
+import cartRoute from './routes/order.route.js'
 
 //express app
 const app = express()
@@ -31,6 +32,8 @@ const server = createServer(app)
 app.use("/api/auth", authRoute)
 //product
 app.use('/api/product', productRoute)
+//cart / order
+app.use('/api/cart', cartRoute)
 
 
 //server start 
