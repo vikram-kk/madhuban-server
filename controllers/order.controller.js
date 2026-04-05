@@ -57,3 +57,31 @@ const getCart = async (req, res) => {
     }
 }
 
+
+// update quantity
+const updateQuantity = async (req, res) => {
+    try {
+        const { ProductId, quantity } = req.body
+        const cart = await Cart.findOne({ user: req.user._id })
+        if (!cart) {
+            return res.status(404).json({
+                message: `not found`
+            })
+        }
+        const item = cart.items.find(
+            item => item.product.toString() === productId
+        )
+        if (!item) {
+            return res.status(404).json({ message: "Item not found" });
+        }
+        item.quantity = quantity;
+
+        await cart.save();
+
+        res.json(cart);
+    } catch (error) {
+        res.status(500).json({
+            message: `internal server error : ${error.message}`
+        })
+    }
+}
