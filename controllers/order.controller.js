@@ -44,7 +44,7 @@ export const addToCart = async (req, res) => {
         })
     } catch (error) {
         res.status(500).json({
-            message: `internal server error`
+            message: `Internal server error: ${error.message}`
         })
     }
 
