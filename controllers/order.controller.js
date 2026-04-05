@@ -40,3 +40,20 @@ const addToCart = async (req, res) => {
 
 }
 
+//get cart 
+const getCart = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const cart = await Cart.findOne({ user: userId }).populate("items.product");
+        if (!cart) {
+            res.status(404).json({
+                message: `cart not found`
+            })
+        }
+    } catch (error) {
+        res.status(500).json({
+            message: `internal server error : ${error.message}`
+        })
+    }
+}
+
