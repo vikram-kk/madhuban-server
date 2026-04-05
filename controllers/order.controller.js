@@ -59,7 +59,7 @@ const getCart = async (req, res) => {
 
 
 // update quantity
-const updateQuantity = async (req, res) => {
+const updateCartItem = async (req, res) => {
     try {
         const { ProductId, quantity } = req.body
         const cart = await Cart.findOne({ user: req.user._id })
