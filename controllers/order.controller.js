@@ -85,3 +85,28 @@ const updateQuantity = async (req, res) => {
         })
     }
 }
+
+//remove item 
+
+const removeItem = async (req, res) => {
+    try {
+        const { productId } = req.body
+        const cart = await Cart.findOne({ user: req.user._id })
+        if (!cart) {
+            return res.status(404).json({
+                message: `cart not found`
+            })
+        }
+        cart.items = cart.items.filter(item => item.product.toString() !== productId)
+        await cart.save()
+        res.status(200).json({
+            message: `item removed `,
+            cart
+        })
+
+    } catch (error) {
+        res.status(500).json({
+            message: `internal server at remove item : ${error.message}`
+        })
+    }
+}
