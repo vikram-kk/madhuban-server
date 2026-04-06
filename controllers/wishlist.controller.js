@@ -1,8 +1,9 @@
 import Wishlist from "../models/Wishlist.model.js"
+import Product from "../models/Product.model.js"
 
 
 // add to wishlist 
-export const addToWhislist = async (req, res) => {
+export const addToWishlist = async (req, res) => {
     try {
         //   let alreadyAdded = false;
         const { productId } = req.body
@@ -19,7 +20,7 @@ export const addToWhislist = async (req, res) => {
         if (!wishlist) {
             wishlist = await Wishlist.create({
                 user: userId,
-                products: [product]
+                products: [productId]
 
             })
             return res.status(201).json({
@@ -46,29 +47,63 @@ export const addToWhislist = async (req, res) => {
 
     } catch (error) {
         res.status(500).json({
-            message: `internal server error at addToWihslist : ${error.message}`
+            message: `internal server error at addTowishlist : ${error.message}`
         })
     }
 
 }
 
-// get wihslist 
+// get wishlist 
 export const getWishlist = async (req, res) => {
     try {
         const userId = req.user._id
         const wishlist = await Wishlist.findOne({ user: userId }).populate("products", "name price image stock")
         if (!wishlist) {
             return res.status(404).json({
-                message: `wihslist not found`
+                message: `wishlist not found`
             })
         }
         res.status(200).json({
-            message: `wihslist found`,
+            message: `wishlist found`,
             wishlist
         })
     } catch (error) {
         res.status(500).json({
             message: `internal server at getWishlist : ${error.message}`
         })
+    }
+}
+
+//remove from wishlist 
+export const removeWishlist = async (req, res) => {
+    try {
+        const userId = req.user._id
+        const { productId } = req.body
+        const product = await Product.findById(productId)
+        if (!product) {
+            return res.status(404).json({
+                message: `product not found`,
+                success: false
+            })
+        }
+        const wishlist = await Wishlist.findOne({ user: userId })
+        if (!wishlist) {
+            return res.status(404).json({
+                message: ` wishlist not found`,
+                success: false
+            })
+        }
+        wishlist.products = wishlist.products.filter(items => items.toString() !== productId.toString())
+        await wishlist.save();
+
+        res.json({
+            message: "Item removed",
+            wishlist
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            message: error.message
+        });
     }
 }
