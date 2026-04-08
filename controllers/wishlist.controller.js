@@ -74,36 +74,70 @@ export const getWishlist = async (req, res) => {
     }
 }
 
-//remove from wishlist 
+// //remove from wishlist 
+// export const removeWishlist = async (req, res) => {
+//     try {
+//         const userId = req.user._id
+//         const { productId } = req.params
+//         const product = await Product.findById(productId)
+//         if (!product) {
+//             return res.status(404).json({
+//                 message: `product not found`,
+//                 success: false
+//             })
+//         }
+//         const wishlist = await Wishlist.findOne({ user: userId })
+//         if (!wishlist) {
+//             return res.status(404).json({
+//                 message: ` wishlist not found`,
+//                 success: false
+//             })
+//         }
+//         wishlist.products = wishlist.products.filter(items => items.toString() !== productId.toString())
+//         await wishlist.save();
+
+//         res.json({
+//             message: "Item removed",
+//             wishlist
+//         });
+
+//     } catch (error) {
+//         res.status(500).json({
+//             message: error.message
+//         });
+//     }
+// }
+
+
 export const removeWishlist = async (req, res) => {
     try {
-        const userId = req.user._id
-        const { productId } = req.body
-        const product = await Product.findById(productId)
-        if (!product) {
-            return res.status(404).json({
-                message: `product not found`,
-                success: false
-            })
-        }
-        const wishlist = await Wishlist.findOne({ user: userId })
+        const userId = req.user._id;
+        const { productId } = req.params;
+
+        // Use findOneAndUpdate with $pull to remove the item directly
+        const wishlist = await Wishlist.findOneAndUpdate(
+            { user: userId },
+            { $pull: { products: productId } }, // This removes the ID from the array
+            { new: true } // Returns the updated document
+        );
+
         if (!wishlist) {
             return res.status(404).json({
-                message: ` wishlist not found`,
-                success: false
-            })
+                success: false,
+                message: "Wishlist not found"
+            });
         }
-        wishlist.products = wishlist.products.filter(items => items.toString() !== productId.toString())
-        await wishlist.save();
 
-        res.json({
-            message: "Item removed",
+        res.status(200).json({
+            success: true,
+            message: "Item removed from wishlist",
             wishlist
         });
 
     } catch (error) {
         res.status(500).json({
-            message: error.message
+            success: false,
+            message: `Internal server error: ${error.message}`
         });
     }
 }
