@@ -11,7 +11,7 @@ import socketServer from './services/socket.service.js'
 import connectDb from './configurations/mongoDB.config.js'
 import authRoute from './routes/auth.route.js'
 import productRoute from './routes/product.route.js'
-import cartRoute from './routes/order.route.js'
+import cartRoute from './routes/cart.route.js'
 import wishRoute from './routes/wishlist.routes.js'
 
 //express app
