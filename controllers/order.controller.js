@@ -52,3 +52,30 @@ export const createOrder = async (req, res) => {
         })
     }
 }
+
+
+//get my order controller 
+
+export const getMyOrder = async (req, res) => {
+    try {
+        const userId = req.user._id
+        const orders = await Order.findOne({ user: userId }).populate("items.product")
+        if (!orders) {
+            return res.json(404).json({
+                message: `you have not placed any order yet`,
+                success: false
+            })
+        }
+        res.status(200).json({
+            message: `oders found`,
+            success: true,
+            orders
+        })
+    } catch (error) {
+        return res.status(500).json({
+            message: `internal server error : ${error.message}`,
+            success: false
+        })
+    }
+
+}
