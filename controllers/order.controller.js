@@ -1,0 +1,54 @@
+import Cart from "../models/Cart.model"
+import Order from "../models/Order.model"
+
+
+// create order
+export const createOrder = async (req, res) => {
+    try {
+        const { shippingAddress, paymentMethod } = req.body
+        const userId = req.user._id
+        const cart = await Cart.findOne({ user: userId }).populate('items.product')
+        if (!cart || cart.items.length === 0) {
+            return res.status(404).json({
+                message: `cart is empty`,
+                success: false,
+            })
+        }
+
+
+
+        const orderItems = cart.items.map(item => ({
+            product: item.product._id,
+            name: item.product.name,
+            price: item.product.price,
+            quantity: item.quantity,
+            image: item.product.images?.[0] || ""
+        }))
+
+        const totalPrice = orderItems.reduce(
+            (acc, item) => acc + item.price * item.quantity,
+            0
+        );
+        const order = await Order.create({
+            user: userId,
+            items: orderItems,
+            shippingAddress,
+            paymentMethod,
+            totalPrice
+        });
+
+
+        cart.items = [];
+        await cart.save();
+
+        return res.status(201).json({
+            message: "Order placed successfully",
+            order
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            message: `internal server error : ${error.message}`
+        })
+    }
+}

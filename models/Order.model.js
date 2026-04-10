@@ -1,12 +1,13 @@
 import mongoose from 'mongoose'
-import User from './User.model'
+// import User from './User.model'
 
 
 const orderSchema = new mongoose.Schema({
     user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
-        required: true
+        required: true,
+        index: true
     },
 
 
@@ -14,11 +15,12 @@ const orderSchema = new mongoose.Schema({
         {
             product: {
                 type: mongoose.Schema.Types.ObjectId,
-                ref: "Product"
+                ref: "Product",
+                required: true
             },
-            name: String,
-            price: Number,
-            quantity: Number,
+            name: { type: String, required: true },
+            price: { type: Number, required: true, min: 0 },
+            quantity: { type: Number, required: true, min: 1 },
             image: String
         }
     ],
@@ -72,6 +74,7 @@ const orderSchema = new mongoose.Schema({
     },
 
     paidAt: Date,
+    deliveredAt: Date
 
 }, { timestamps: true });
 
