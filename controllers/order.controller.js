@@ -110,3 +110,47 @@ export const getOrder = async (req, res) => {
         });
     }
 };
+
+// cancle order controller
+export const cancelOrder = async (req, res) => {
+    try {
+        const { orderStatus } = req.body;
+        if (!orderStatus.toString().toLowerCase() === "cancelled" || !orderStatus) {
+            return res.status(401).json({
+                message: `Bad request `,
+                success: false
+            })
+        }
+        const orderId = req.params.id;
+        const userId = req.user._id;
+        const order = await Order.findOne({
+            _id: orderId,
+            user: userId
+        }).populate('items.product');
+        if (!order) {
+            return res.status(404).json({
+                message: `order not found`,
+                success: false
+            })
+        }
+        order.orderStatus = orderStatus
+        await order.save()
+        res.status(201).json({
+            message: `order status updated`,
+            success: true,
+            order
+        })
+
+    } catch (error) {
+        return res.status(500).json({
+            message: `internal server error : ${error.message}`,
+            success: false
+        })
+    }
+}
+
+// get all orders for admin
+
+
+
+//update order status
