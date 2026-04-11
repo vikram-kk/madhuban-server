@@ -150,7 +150,24 @@ export const cancelOrder = async (req, res) => {
 }
 
 // get all orders for admin
+export const getAllOrders = async (req, res) => {
+    try {
+        const order = await Order.find({}).populate('items.product')
+        if (!order) {
+            return res.status(404).json({
+                message: `no order found`,
+                success: false
+            })
+        }
+        res.status(200).json({
+            message: `orders found`,
+            success: true,
+            orders: order
+        })
+    } catch (error) {
 
+    }
+}
 
 
 //update order status
