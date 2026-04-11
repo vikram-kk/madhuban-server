@@ -114,9 +114,10 @@ export const getOrder = async (req, res) => {
 // cancle order controller
 export const cancelOrder = async (req, res) => {
     try {
-        const { orderStatus } = req.body;
-        if (!orderStatus.toString().toLowerCase() === "cancelled" || !orderStatus) {
-            return res.status(401).json({
+
+
+        if (!orderStatus || orderStatus.toLowerCase() !== "cancelled") {
+            return res.status(400).json({
                 message: `Bad request `,
                 success: false
             })
@@ -133,10 +134,16 @@ export const cancelOrder = async (req, res) => {
                 success: false
             })
         }
-        order.orderStatus = orderStatus
+        if (["shipped", "delivered"].includes(order.orderStatus)) {
+            return res.status(400).json({
+                message: "Order cannot be cancelled now",
+                success: false
+            });
+        }
+        order.orderStatus = "cancelled"
         await order.save()
         res.status(201).json({
-            message: `order status updated`,
+            message: `Order cancelled successfully`,
             success: true,
             order
         })
@@ -152,22 +159,31 @@ export const cancelOrder = async (req, res) => {
 // get all orders for admin
 export const getAllOrders = async (req, res) => {
     try {
-        const order = await Order.find({}).populate('items.product')
-        if (!order) {
-            return res.status(404).json({
-                message: `no order found`,
-                success: false
-            })
-        }
-        res.status(200).json({
-            message: `orders found`,
-            success: true,
-            orders: order
-        })
-    } catch (error) {
+        const orders = await Order.find({})
+            .populate("user", "name email")
+            .populate("items.product")
+            .sort({ createdAt: -1 });
 
+        if (orders.length === 0) {
+            return res.status(404).json({
+                message: "No orders found",
+                success: false
+            });
+        }
+
+        res.status(200).json({
+            message: "Orders found",
+            success: true,
+            orders
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            message: `Internal server error: ${error.message}`,
+            success: false
+        });
     }
-}
+};
 
 
 //update order status
