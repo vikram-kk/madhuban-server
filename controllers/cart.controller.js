@@ -129,7 +129,7 @@ export const removeItem = async (req, res) => {
                 message: `cart not found`
             })
         }
-        cart.items = cart.items.filter(item => item.product.toString() !== productId)
+        cart.items = cart.items.filter(item => item.product.toString() !== productId.toString())
         await cart.save()
         res.status(200).json({
             message: `item removed `,
