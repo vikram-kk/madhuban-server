@@ -4,7 +4,7 @@ import { createOrder, getMyOrder } from '../controllers/order.controller.js';
 const router = express.Router()
 
 
-router.post("/place", AuthMid, createOrder);
-router.get("/my", authMiddleware, getMyOrder);
+router.post("/place", authMid, createOrder);
+router.get("/my", authMid, getMyOrder);
 
 export default router
