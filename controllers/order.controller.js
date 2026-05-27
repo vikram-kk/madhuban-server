@@ -43,7 +43,7 @@ export const createOrder = async (req, res) => {
             shippingAddress,
             paymentMethod,
             totalPrice,
-            orderStatus: "pending"
+            orderStatus: "processing"
         });
 
         cart.items = [];

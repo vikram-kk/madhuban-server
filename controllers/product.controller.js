@@ -68,6 +68,16 @@ export const getProductById = async (req, res) => {
         res.status(200).json({
             message: "product found",
             product
+            //name: string;
+            // price: number;
+            // description: string;
+            // images: string[];
+            // category: string;
+            // stock: number;
+            // ratings: number;
+            // numReviews: number;
+            // MRP?: number | null | undefined;
+            // discount?: number | null | undefined;
         })
     } catch (error) {
         return res.status(500).json({
