@@ -84,27 +84,37 @@ export const createAddress = async (req, res) => {
 
 export const deleteAddress = async (req, res) => {
     try {
-        // accessing the address using the address Id
-        const addressId = req.params.addressId
-        //validating the address
+        const addressId = req.params.addressId;
+        const userId = req.user._id;
+
         if (!addressId) {
-            return res.status(404).json({
-                message: `choose valid address`,
+            return res.status(400).json({
+                message: "Choose a valid address",
                 success: false
-            })
+            });
         }
 
-        // delete the address accessing the Address directly
-        const address = await Address.deleteOne({ _id: addressId })
-        res.status(200).json({
-            message: `address removed successfully`,
+        const result = await Address.deleteOne({
+            _id: addressId,
+            user: userId
+        });
+
+        if (result.deletedCount === 0) {
+            return res.status(404).json({
+                message: "Address not found",
+                success: false
+            });
+        }
+
+        return res.status(200).json({
+            message: "Address removed successfully",
             success: true
-        })
+        });
 
     } catch (error) {
         return res.status(500).json({
-            message: `Internal server error in delete address : ${error.message}`,
+            message: `Internal server error in delete address: ${error.message}`,
             success: false
         });
     }
-}
+};
