@@ -14,6 +14,7 @@ import productRoute from './routes/product.route.js'
 import cartRoute from './routes/cart.route.js'
 import wishRoute from './routes/wishlist.routes.js'
 import orderRoute from './routes/order.route.js'
+import addressRoute from './routes/address.route.js'
 
 //express app
 const app = express()
@@ -40,6 +41,8 @@ app.use('/api/cart', cartRoute)
 app.use('/api/wishlist', wishRoute)
 // order 
 app.use('/api/order', orderRoute)
+// address
+app.use('/api/address', addressRoute)
 
 
 //server start 
