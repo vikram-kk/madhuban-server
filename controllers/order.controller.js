@@ -192,7 +192,7 @@ export const getAllOrders = async (req, res) => {
 
 
 //update order status
-export const updateOrder = async (req, res) => {
+export const updateOrderStatus = async (req, res) => {
     try {
         const { orderStatus } = req.body;
         const orderId = req.params.orderId;
