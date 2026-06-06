@@ -100,7 +100,7 @@ export const getOrder = async (req, res) => {
             user: userId
         }).populate("items.product");
 
-        if (orders.length === 0) {
+        if (!orders) {
             return res.status(404).json({
                 message: "Order not found",
                 success: false

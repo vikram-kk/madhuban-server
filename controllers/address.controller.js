@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import Address from "../models/Address.model"
 
 export const userAddresses = async (req, res) => {
@@ -118,3 +119,59 @@ export const deleteAddress = async (req, res) => {
         });
     }
 };
+
+
+export const updateAddress = async (req, res) => {
+    try {
+        // gettting in body 
+        const addressMod = req.body
+        // accessing address using the address Id 
+        const addressId = req.params.addressId
+        const userId = req.user._id;
+
+        if (!mongoose.Types.ObjectId.isValid(addressId)) {
+            return res.status(400).json({
+                message: "Invalid address ID",
+                success: false
+            });
+        }
+        //validation
+        if (Object.keys(addressMod).length === 0) {
+            return res.status(400).json({
+                message: "Enter data to update",
+                success: false
+            });
+        }
+        // checking if the address exist and address belongs to it's owner
+        const address = await Address.findOne({
+            _id: addressId,
+            user: userId
+        })
+
+        if (!address) {
+            return res.status(404).json({
+                message: `Choose valid address`,
+                success: false
+            })
+        }
+
+        // editing the data
+        Object.assign(address, addressMod);
+
+        await address.save();
+        res.status(200).json({
+            message: `Address updated`,
+            success: true,
+            address
+        })
+
+
+
+    } catch (error) {
+        return res.status(500).json({
+            message: `Internal server error in update address: ${error.message}`,
+            success: false
+        });
+    }
+
+}
