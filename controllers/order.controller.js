@@ -192,3 +192,61 @@ export const getAllOrders = async (req, res) => {
 
 
 //update order status
+export const updateOrder = async (req, res) => {
+    try {
+        const { orderStatus } = req.body;
+        const orderId = req.params.orderId;
+
+        const statusFlow = {
+            processing: ["shipped", "cancelled"],
+            shipped: ["delivered"],
+            delivered: [],
+            cancelled: []
+        };
+        const allowedStatus = ["processing", "shipped", "delivered", "cancelled"]
+
+        if (!allowedStatus.includes(orderStatus)) {
+            return res.status(400).json({
+                message: `enter valid status`,
+                success: false
+            })
+        }
+
+
+        const order = await Order.findById(orderId)
+        if (!order) {
+            return res.status(404).json({
+                message: `order not found`,
+                success: false
+            })
+        }
+        if (order.orderStatus === orderStatus) {
+            return res.status(400).json({
+                message: "Order already has this status",
+                success: false
+            });
+        }
+        const currentStatus = order.orderStatus;
+
+        if (!statusFlow[currentStatus].includes(orderStatus)) {
+            return res.status(400).json({
+                message: "Invalid status transition",
+                success: false
+            });
+        }
+
+        order.orderStatus = orderStatus
+        await order.save()
+        res.status(200).json({
+            message: `order status updated`,
+            success: true,
+            order
+        })
+    } catch (error) {
+
+        return res.status(500).json({
+            message: `Internal server error: ${error.message}`,
+            success: false
+        });
+    }
+}
