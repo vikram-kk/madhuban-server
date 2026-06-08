@@ -147,6 +147,8 @@ const logout = async (req, res) => {
 //me controller 
 export const findme = async (req, res) => {
     try {
+        console.log(req.user);
+
         return res.status(200).json({
             message: "User found",
             user: req.user
