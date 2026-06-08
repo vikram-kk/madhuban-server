@@ -184,7 +184,7 @@ export const getAllOrders = async (req, res) => {
 
     } catch (error) {
         return res.status(500).json({
-            message: `Internal server error: ${error.message}`,
+            message: `Internal server error in get all orders: ${error.message}`,
             success: false
         });
     }
