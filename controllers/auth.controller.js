@@ -91,40 +91,51 @@ export const login = async (req, res) => {
 
 //update profile controller 
 export const updateProfile = async (req, res) => {
-    // authnecticated user 
     try {
-        // form here we found the data that we want to update or modify
-        const { fieldToUpdate, newValue } = req.body
-        // here we are finding the user 
-        const userId = req.user._id
-        const user = await User.findById(userId)
+        const userId = req.user._id;
+        const user = await User.findById(userId);
+
         if (!user) {
-            return res.status(404).json({
-                message: "user not found"
-            })
+            return res.status(404).json({ message: "User not found" });
         }
-        //check whether user is demanding the right field to update 
-        const restricted = ['password', 'role'];
-        if (restricted.includes(fieldToUpdate)) {
-            return res.status(403).json({ message: "Cannot update restricted fields here" });
+
+        // 1. Define restricted fields
+        const restricted = ['password', 'role', '_id', 'createdAt', 'updatedAt', '__v'];
+
+        // 2. Loop through all fields sent by the frontend dynamically
+        const updates = Object.keys(req.body); // e.g., ['name', 'email']
+
+        for (let field of updates) {
+            // Check whether user is trying to update a restricted field
+            if (restricted.includes(field)) {
+                return res.status(403).json({
+                    message: `Cannot update restricted field: ${field}`
+                });
+            }
+
+            // Assign the new value dynamically if it exists
+            if (req.body[field] !== undefined) {
+                user[field] = req.body[field];
+            }
         }
-        // changing the field in the user object 
-        user[fieldToUpdate] = newValue
-        //saving the changes will finally store the change in the db
-        await user.save()
-        const updatedUser = user.toObject()
-        delete updatedUser.password
+
+        // 3. Save the changes to the database
+        await user.save();
+
+        const updatedUser = user.toObject();
+        delete updatedUser.password;
+
         return res.status(200).json({
-            message: "user updated successfully",
+            message: "User updated successfully",
             user: updatedUser
-        })
+        });
+
     } catch (error) {
         return res.status(500).json({
-            message: `internal server error : ${error.message}`
-        })
+            message: `Internal server error: ${error.message}`
+        });
     }
-}
-
+};
 
 
 //logout controller 

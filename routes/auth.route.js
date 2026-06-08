@@ -6,7 +6,7 @@ const router = express.Router()
 
 router.post('/register', register)
 router.post('/login', login)
-router.patch('/update/:userId', authMid, updateProfile)
+router.put('/update', authMid, updateProfile)
 router.get('/user', authMid, findme)
 
 
