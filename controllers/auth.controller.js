@@ -91,6 +91,8 @@ export const login = async (req, res) => {
 
 //update profile controller 
 export const updateProfile = async (req, res) => {
+    console.log("hello vikram");
+
     try {
         const userId = req.user._id;
         const user = await User.findById(userId);
@@ -147,7 +149,7 @@ const logout = async (req, res) => {
 //me controller 
 export const findme = async (req, res) => {
     try {
-        console.log(req.user);
+        // console.log(req.user);
 
         return res.status(200).json({
             message: "User found",
