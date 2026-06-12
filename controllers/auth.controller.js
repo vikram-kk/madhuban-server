@@ -91,7 +91,7 @@ export const login = async (req, res) => {
 
 //update profile controller 
 export const updateProfile = async (req, res) => {
-    console.log("hello vikram");
+    // console.log("hello vikram");
 
     try {
         const userId = req.user._id;
