@@ -1,5 +1,5 @@
 import mongoose from 'mongoose'
-
+import cloud from '../configurations/cloudinary.config.js'
 
 import Product from '../models/Product.model.js'
 
@@ -39,6 +39,10 @@ export const getProducts = async (req, res) => {
 export const createProduct = async (req, res) => {
     try {
         const product = await Product.create(req.body)
+        let imgUrl;
+        if (req.file) {
+            imgUrl = req.file;
+        }
         if (!product) {
             return res.status(400).json({
                 message: "product field invalid"
