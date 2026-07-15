@@ -1,5 +1,5 @@
 import mongoose from 'mongoose'
-import cloud from '../configurations/cloudinary.config.js'
+import cloudinary from '../configurations/cloudinary.config.js'
 
 import Product from '../models/Product.model.js'
 
@@ -38,23 +38,33 @@ export const getProducts = async (req, res) => {
 // create product 
 export const createProduct = async (req, res) => {
     try {
-        const product = await Product.create(req.body)
+        const obj = req.body
         let imgUrl;
-        if (req.file) {
-            imgUrl = req.file;
+        if (!req.file) {
+            return res.status(404).json({
+                message: `image not found`,
+                success: false
+            })
         }
+        const result = await cloudinary.uploader.upload(req.file.path);
+        imgUrl = result.secure_url;
+        console.log(imgUrl);
+
+        const product = await Product.create({ ...obj, images: [imgUrl] })
         if (!product) {
             return res.status(400).json({
                 message: "product field invalid"
             })
         }
-        res.status(201).json({
+        return res.status(201).json({
             message: "product created",
             product
         })
+
+
     } catch (error) {
         res.status(500).json({
-            message: error.message
+            message: `error at create product : ${error.message}`
         })
     }
 }
