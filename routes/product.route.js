@@ -10,7 +10,7 @@ const router = express.Router()
 router.get("/", getProducts)
 router.get("/:productId", getProductById)
 router.post("/create", authMid, roleMid('admin'), upload.single('image'), createProduct)
-router.put("/update/:id", authMid, roleMid('admin'), updateProduct)
+router.put("/update/:id", authMid, roleMid('admin'), upload.single('image'), updateProduct)
 router.delete("/:id", authMid, roleMid('admin'), deleteProduct)
 
 

@@ -1,5 +1,7 @@
 import mongoose from 'mongoose'
 import cloudinary from '../configurations/cloudinary.config.js'
+import fs from "fs";
+
 
 import Product from '../models/Product.model.js'
 
@@ -38,7 +40,7 @@ export const getProducts = async (req, res) => {
 // create product 
 export const createProduct = async (req, res) => {
     try {
-        const obj = req.body
+        const obj = { ...req.body }
         let imgUrl;
         if (!req.file) {
             return res.status(404).json({
@@ -46,9 +48,17 @@ export const createProduct = async (req, res) => {
                 success: false
             })
         }
+
+
+        if (obj.specifications) {
+            obj.specifications = { ...obj.specifications };
+        }
         const result = await cloudinary.uploader.upload(req.file.path);
         imgUrl = result.secure_url;
         console.log(imgUrl);
+        console.log(req.body);
+        console.log(req.body.specifications);
+        console.log(typeof req.body.specifications);
 
         const product = await Product.create({ ...obj, images: [imgUrl] })
         if (!product) {
@@ -56,6 +66,7 @@ export const createProduct = async (req, res) => {
                 message: "product field invalid"
             })
         }
+        fs.unlinkSync(req.file.path);
         return res.status(201).json({
             message: "product created",
             product
@@ -100,25 +111,40 @@ export const getProductById = async (req, res) => {
     }
 }
 
-// update product 
 export const updateProduct = async (req, res) => {
     try {
-        const product = await Product.findByIdAndUpdate(req.params.id,
-            req.body,
-            { new: true }
-        )
-        res.status(201).json({
-            message: 'product updated',
+
+        const product = await Product.findById(req.params.id);
+
+        if (!product) {
+            return res.status(404).json({
+                success: false,
+                message: "Product not found"
+            });
+        }
+
+        Object.assign(product, req.body);
+
+        if (req.file) {
+            const result = await cloudinary.uploader.upload(req.file.path);
+            product.images = [result.secure_url];
+        }
+
+        await product.save();
+
+        return res.status(200).json({
+            success: true,
+            message: "Product updated successfully",
             product
-        })
+        });
 
     } catch (error) {
         return res.status(500).json({
-            message: `error at updateproduct : ${error.message}`
-        })
+            success: false,
+            message: `error at : ${error.message}`
+        });
     }
 }
-
 
 //delete product
 export const deleteProduct = async (req, res) => {
