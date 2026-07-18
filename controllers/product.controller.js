@@ -1,172 +1,178 @@
 import mongoose from 'mongoose'
 import cloudinary from '../configurations/cloudinary.config.js'
 import fs from "fs";
-
-
 import Product from '../models/Product.model.js'
 
-// get product from query
+// 1. Get products list with basic filters
 export const getProducts = async (req, res) => {
     try {
+        const { keyword, maxPrice, minPrice } = req.query;
+        let query = {};
 
-        const { keyword, maxPrice, minPrice } = req.query
-        let query = {}
-        // adding keyword in query 
         if (keyword) {
             query.name = { $regex: keyword, $options: "i" };
         }
-        // adding price filter/range in query
 
         if (maxPrice && minPrice) {
             query.price = {
                 $gte: Number(minPrice),
                 $lte: Number(maxPrice)
-            }
+            };
         }
-        // finding products
+
         const products = await Product.find(query);
-        res.status(200).json({
+        return res.status(200).json({
             message: "products list",
             products
-        })
+        });
     } catch (error) {
-        res.status(404).json({
+        return res.status(404).json({
             message: `not found : ${error.message}`
-        })
+        });
     }
+};
 
-}
-
-// create product 
+// 2. Create product 
 export const createProduct = async (req, res) => {
     try {
-        const obj = { ...req.body }
-        let imgUrl;
+        const obj = { ...req.body };
+
         if (!req.file) {
-            return res.status(404).json({
+            return res.status(400).json({
                 message: `image not found`,
                 success: false
-            })
+            });
         }
-
 
         if (obj.specifications) {
             obj.specifications = { ...obj.specifications };
         }
-        const result = await cloudinary.uploader.upload(req.file.path);
-        imgUrl = result.secure_url;
-        console.log(imgUrl);
-        console.log(req.body);
-        console.log(req.body.specifications);
-        console.log(typeof req.body.specifications);
 
-        const product = await Product.create({ ...obj, images: [imgUrl] })
+        const result = await cloudinary.uploader.upload(req.file.path);
+        const imgUrl = result.secure_url;
+
+        const product = await Product.create({ ...obj, images: [imgUrl] });
+
+
+        fs.unlinkSync(req.file.path);
+
         if (!product) {
             return res.status(400).json({
                 message: "product field invalid"
-            })
+            });
         }
-        fs.unlinkSync(req.file.path);
+
         return res.status(201).json({
             message: "product created",
             product
-        })
-
-
+        });
     } catch (error) {
-        res.status(500).json({
+        // Clean up local file if Cloudinary/Database throws an error mid-flight
+        if (req.file && fs.existsSync(req.file.path)) {
+            fs.unlinkSync(req.file.path);
+        }
+        return res.status(500).json({
             message: `error at create product : ${error.message}`
-        })
+        });
     }
-}
+};
 
-//get single product 
+// 3. Get single product 
 export const getProductById = async (req, res) => {
     try {
-        const productId = req.params.productId
-        const product = await Product.findById(productId)
+        const productId = req.params.productId;
+        const product = await Product.findById(productId);
         if (!product) {
             return res.status(404).json({
                 message: "product not found"
-            })
+            });
         }
-        res.status(200).json({
+        return res.status(200).json({
             message: "product found",
             product
-            //name: string;
-            // price: number;
-            // description: string;
-            // images: string[];
-            // category: string;
-            // stock: number;
-            // ratings: number;
-            // numReviews: number;
-            // MRP?: number | null | undefined;
-            // discount?: number | null | undefined;
-        })
+        });
     } catch (error) {
         return res.status(500).json({
             message: `error at product controller : ${error.message}`
-        })
+        });
     }
-}
+};
 
-
+// 4. Advanced search endpoint (Fixed Crashes & Typos)
 export const serachProduct = async (req, res) => {
     try {
-        const { search, category } = req.query
-        // if (!search || !search.trim() || !category) {
-        //     return res.status(400).json({
-        //         message: "Search query is required",
-        //         success: false
-        //     });
-        // }
-        const filter = {}
+        // FIXED: Destructured missing fields from req.query
+        const { search, category, minPrice, maxPrice, sort } = req.query;
+
+        const filter = {};
+        const sortObj = {};
+
         if (search) {
             filter.name = {
                 $regex: search,
                 $options: 'i'
-            }
+            };
         }
+
         if (minPrice || maxPrice) {
-
             filter.price = {};
-
-            if (minPrice)
-                filter.price.$gte = Number(minPrice);
-
-            if (maxPrice)
-                filter.price.$lte = Number(maxPrice);
+            if (minPrice) filter.price.$gte = Number(minPrice);
+            if (maxPrice) filter.price.$lte = Number(maxPrice);
         }
 
         if (category) {
             filter.category = category;
         }
-        const product = await Product.find(filter)
-        if (!product || product.length == 0) {
-            return res.status(404).json({
-                message: `product not found `,
-                success: false
-            })
+
+        if (sort) {
+            switch (sort) {
+                case "price_asc":
+                    sortObj.price = 1;
+                    break;
+                case "price_desc":
+                    sortObj.price = -1;
+                    break;
+                case "newest":
+                    sortObj.createdAt = -1;
+                    break;
+                case "rating":
+                    sortObj.ratings = -1;
+                    break;
+                default:
+                    sortObj.createdAt = -1;
+            }
+        } else {
+            sortObj.createdAt = -1;
         }
+
+        const product = await Product.find(filter).sort(sortObj);
+
+        if (!product || product.length === 0) {
+            return res.status(404).json({
+                message: `product not found`,
+                success: false
+            });
+        }
+
         return res.status(200).json({
-            message: `Product found `,
+            message: `Product found`,
             product,
             success: true
-        })
+        });
     } catch (error) {
-        res.status(500).json({
+        return res.status(500).json({
             message: `internal error at search product : ${error.message}`
-        })
+        });
     }
-}
+};
 
+// 5. Update Product (Fixed File leak)
 export const updateProduct = async (req, res) => {
     try {
-
         const product = await Product.findById(req.params.id);
 
         if (!product) {
+            if (req.file) fs.unlinkSync(req.file.path); // Clean leak if not found
             return res.status(404).json({
                 success: false,
                 message: "Product not found"
@@ -178,6 +184,7 @@ export const updateProduct = async (req, res) => {
         if (req.file) {
             const result = await cloudinary.uploader.upload(req.file.path);
             product.images = [result.secure_url];
+            fs.unlinkSync(req.file.path);
         }
 
         await product.save();
@@ -187,21 +194,23 @@ export const updateProduct = async (req, res) => {
             message: "Product updated successfully",
             product
         });
-
     } catch (error) {
+        if (req.file && fs.existsSync(req.file.path)) {
+            fs.unlinkSync(req.file.path);
+        }
         return res.status(500).json({
             success: false,
             message: `error at : ${error.message}`
         });
     }
-}
+};
 
-//delete product
+// 6. Delete Product
 export const deleteProduct = async (req, res) => {
     try {
         await Product.findByIdAndDelete(req.params.id);
-        res.json({ message: "Product deleted" });
+        return res.json({ message: "Product deleted" });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        return res.status(500).json({ message: error.message });
     }
 };
