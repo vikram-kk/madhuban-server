@@ -111,6 +111,43 @@ export const getProductById = async (req, res) => {
     }
 }
 
+
+export const serachProduct = async (req, res) => {
+    try {
+        const { search } = req.query
+        if (!search || !search.trim()) {
+            return res.status(400).json({
+                message: "Search query is required",
+                success: false
+            });
+        }
+        const filter = {}
+        if (search) {
+            filter.name = {
+                $regex: search,
+                $options: 'i'
+            }
+        }
+
+        const product = await Product.find(filter)
+        if (!product || product.length == 0) {
+            return res.status(404).json({
+                message: `product not found `,
+                success: false
+            })
+        }
+        return res.status(200).json({
+            message: `Product found `,
+            product,
+            success: true
+        })
+    } catch (error) {
+        res.status(500).json({
+            message: `internal error at search product : ${error.message}`
+        })
+    }
+}
+
 export const updateProduct = async (req, res) => {
     try {
 
