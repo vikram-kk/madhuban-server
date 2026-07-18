@@ -114,13 +114,13 @@ export const getProductById = async (req, res) => {
 
 export const serachProduct = async (req, res) => {
     try {
-        const { search } = req.query
-        if (!search || !search.trim()) {
-            return res.status(400).json({
-                message: "Search query is required",
-                success: false
-            });
-        }
+        const { search, category } = req.query
+        // if (!search || !search.trim() || !category) {
+        //     return res.status(400).json({
+        //         message: "Search query is required",
+        //         success: false
+        //     });
+        // }
         const filter = {}
         if (search) {
             filter.name = {
@@ -128,7 +128,20 @@ export const serachProduct = async (req, res) => {
                 $options: 'i'
             }
         }
+        if (minPrice || maxPrice) {
 
+            filter.price = {};
+
+            if (minPrice)
+                filter.price.$gte = Number(minPrice);
+
+            if (maxPrice)
+                filter.price.$lte = Number(maxPrice);
+        }
+
+        if (category) {
+            filter.category = category;
+        }
         const product = await Product.find(filter)
         if (!product || product.length == 0) {
             return res.status(404).json({
